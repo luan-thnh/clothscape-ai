@@ -4,15 +4,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import ProductDetailComponent from '@/components/products/ProductDetail';
-import ProductGrid from '@/components/products/ProductGrid';
 import { allProducts } from '@/lib/data';
 import { ArrowLeft } from 'lucide-react';
+import ProductRecommendations from '@/components/ai/ProductRecommendations';
+import { trackUserActivity } from '@/services/api';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [product, setProduct] = useState(allProducts.find(p => p.id === id));
-  const [relatedProducts, setRelatedProducts] = useState(allProducts.slice(0, 4));
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -22,12 +22,13 @@ const ProductDetail = () => {
     if (foundProduct) {
       setProduct(foundProduct);
       
-      // Find related products from the same category, excluding the current product
-      const related = allProducts
-        .filter(p => p.category === foundProduct.category && p.id !== foundProduct.id)
-        .slice(0, 4);
-      
-      setRelatedProducts(related);
+      // Track product view for AI recommendations
+      const userId = localStorage.getItem('userId');
+      if (userId) {
+        trackUserActivity('view', foundProduct.id).catch(err => {
+          console.error('Error tracking product view:', err);
+        });
+      }
     }
   }, [id]);
   
@@ -73,13 +74,12 @@ const ProductDetail = () => {
           {/* Product Details */}
           <ProductDetailComponent product={product} />
           
-          {/* Related Products */}
-          {relatedProducts.length > 0 && (
-            <div className="mt-24">
-              <h2 className="text-2xl font-medium mb-8">You Might Also Like</h2>
-              <ProductGrid products={relatedProducts} />
-            </div>
-          )}
+          {/* AI-Powered Recommendations */}
+          <ProductRecommendations 
+            productId={product.id} 
+            userId={localStorage.getItem('userId') || undefined}
+            title="You Might Also Like"
+          />
         </div>
       </main>
       

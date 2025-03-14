@@ -46,4 +46,17 @@ export const getUsers = () => api.get('/users');
 export const getUser = (id: string) => api.get(`/users/${id}`);
 export const updateUser = (id: string, userData: any) => api.put(`/users/${id}`, userData);
 
+// AI API calls
+export const searchProductsAI = (query: string, userId?: string) => 
+  api.post('/ai/search', { query, userId });
+
+export const getRecommendations = (userId?: string, productId?: string) => 
+  api.post('/ai/recommendations', { userId, productId });
+
+export const trackUserActivity = (type: 'view' | 'purchase' | 'cart', productId: string) => 
+  api.post('/ai/track', { type, productId });
+
+export const chatbotQuery = (query: string, userId?: string) => 
+  api.post('/ai/chatbot', { query, userId });
+
 export default api;
